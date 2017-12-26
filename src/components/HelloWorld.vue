@@ -36,6 +36,10 @@
         <ion-button @click="goToDetail">Go to detail page</ion-button>
       </ion-item>
 
+      <ion-button @click="switchSubreddit('funny')">Funny</ion-button>
+      <ion-button @click="switchSubreddit('gifs')">Gifs</ion-button>
+      <ion-button @click="switchSubreddit('worldnews')">Worldnews</ion-button>
+
       <ion-list>
         <ion-item v-for="post in posts" v-bind:key="post.data.id">
           {{post.data.title}}
@@ -49,6 +53,9 @@
 <script>
 
 import RedditService from '../services/reddit'
+import Storage from '../services/storage'
+
+const storage = new Storage()
 
 export default {
   name: 'HelloWorld',
@@ -65,12 +72,29 @@ export default {
     },
     goToDetail () {
       this.$router.push('detail')
+    },
+    switchSubreddit (subreddit) {
+      storage.set('subreddit', subreddit)
+      RedditService.getPosts(subreddit).then(response => {
+        this.posts = response.body.data.children
+      })
     }
   },
   created () {
+    storage.get('subreddit').then((value) => {
+      if (value === null) {
+        value = 'gifs'
+      }
+      RedditService.getPosts(value).then(response => {
+        this.posts = response.body.data.children
+      })
+    })
+
+    /*
     RedditService.getPosts().then(response => {
       this.posts = response.body.data.children
     })
+    */
   }
 }
 </script>
